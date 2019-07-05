@@ -2,12 +2,21 @@
 import Glibc
 import CBacktrace
 
+//SIL Swift Intermediate Language
+// Swift -> Swift Intermediate Language -> LLVM Intermediate Representation -> LLVM Bitcode -> ARMv8
+//@_silgen_function {
+//
+//}
+
 public enum Backtrace {
     public static func install() {
-        setupHandler(signal: SIGILL) { _ in
+        let makeTrace: (CInt) -> Void { _ in
             let state = backtrace_create_state(CommandLine.arguments[0], 1, nil, nil)
             backtrace_print(state, 5, stderr)
         }
+        
+        setupHandler(signal: SIGSEGV, handler: makeTrace)
+        setupHandler(signal: SIGILL, handler: makeTrace)
     }
 
     private static func setupHandler(signal: Int32, handler: @escaping @convention(c) (CInt) -> Void) {
