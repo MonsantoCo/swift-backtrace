@@ -10,7 +10,7 @@ import CBacktrace
 
 public enum Backtrace {
     public static func install() {
-        let makeTrace: (CInt) -> Void { _ in
+        let makeTrace: (CInt) -> Void = { _ in
             let state = backtrace_create_state(CommandLine.arguments[0], 1, nil, nil)
             backtrace_print(state, 5, stderr)
         }
