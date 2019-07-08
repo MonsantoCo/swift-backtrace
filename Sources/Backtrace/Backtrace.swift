@@ -82,25 +82,25 @@ public enum Backtrace {
             
             backtrace_print(state, 5, &Backtrace.traceFilePtr!) // Try skipping 0 frames and see what we're ignoring.
             
-            let trace: String = addr2lineInvocations(from: "FIXME").map {
-                let process = Process()
-                process.launchPath = "/bin/bash"
-                process.arguments = ["-c", "cd \(scoutApiPathInCloudFoundryInstance) && \($0)"]
-                
-                let pipe = Pipe()
-                process.standardOutput = pipe
-                process.launch()
-                process.waitUntilExit()
-                let addr2lineOutput = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? "Failed to Encode"
-                
-                return _stdlib_demangleName(addr2lineOutput)
-            }
-            
-            if let data = trace.data(using: .utf8), let handle = Backtrace.traceFileHandle {
-                handle.write(data)
-            } else {
-                print("❌ Cannot write mangled symbols to the tracefile. Was data nil?\(trace.data(using: .utf8) == nil), Was the handle nil? \(Backtrace.traceFilePtr == nil)")
-            }
+//            let trace: String = addr2lineInvocations(from: "FIXME").map {
+//                let process = Process()
+//                process.launchPath = "/bin/bash"
+//                process.arguments = ["-c", "cd \(scoutApiPathInCloudFoundryInstance) && \($0)"]
+//
+//                let pipe = Pipe()
+//                process.standardOutput = pipe
+//                process.launch()
+//                process.waitUntilExit()
+//                let addr2lineOutput = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? "Failed to Encode"
+//
+//                return _stdlib_demangleName(addr2lineOutput)
+//            }
+//
+//            if let data = trace.data(using: .utf8), let handle = Backtrace.traceFileHandle {
+//                handle.write(data)
+//            } else {
+//                print("❌ Cannot write mangled symbols to the tracefile. Was data nil?\(trace.data(using: .utf8) == nil), Was the handle nil? \(Backtrace.traceFilePtr == nil)")
+//            }
         }
 
         setupHandler(signal: SIGSEGV, handler: makeTrace)
