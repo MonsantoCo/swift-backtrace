@@ -72,15 +72,17 @@ public enum Backtrace {
             Backtrace.traceFilePtr = fopen(traceFile.path, "w")
             guard let traceFileHandle = try? FileHandle(forUpdating: traceFile) else { fatalError("❌ Failed to get a handle for printing the trace.") }
             Backtrace.traceFileHandle = traceFileHandle
-            
         } else {
             fatalError("❌ Failed to find the home directory.")
         }
         
         func makeTrace(_ signal: CInt) {
             let state = backtrace_create_state(CommandLine.arguments[0], 1, nil, nil)
+            
             if let traceFilePtr = Backtrace.traceFilePtr {
-                backtrace_print(state, 5, &traceFilePtr.pointee) // Try skipping 0 frames and see what we're ignoring.
+                print("STDERR 📚 returned: \(backtrace_print(state, 5, &stderr))")
+                print("STDERR 📚 returned: \(backtrace_print(state, 5, &traceFilePtr.pointee))")
+                print("STDERR 📚 returned: \(backtrace_print(state, 5, &stderr))")
             } else {
                 fatalError("❌ Never got file.")
             }
