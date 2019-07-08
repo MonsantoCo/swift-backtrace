@@ -80,12 +80,14 @@ public enum Backtrace {
             let state = backtrace_create_state(CommandLine.arguments[0], 1, nil, nil)
             
             if let traceFilePtr = Backtrace.traceFilePtr {
-                print("TRACER 📚 returned: \(backtrace_print(state, 5, traceFilePtr))")
-                print("STDERR 📚 returned: \(backtrace_print(state, 5, stderr))")
+                backtrace_print(state, 5, traceFilePtr)
+                backtrace_print(state, 5, stderr)
+                let dataFromOurFile = Backtrace.traceFileHandle!.readDataToEndOfFile()
+                print("We got this much data: \(dataFromOurFile.count)")
+                print(String(data: dataFromOurFile, encoding: .utf8).flatMap {$0} ?? "❌")
             } else {
                 fatalError("❌ Never got file.")
             }
-            
 //            let trace: String = addr2lineInvocations(from: "FIXME").map {
 //                let process = Process()
 //                process.launchPath = "/bin/bash"
