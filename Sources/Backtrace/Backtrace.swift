@@ -80,7 +80,7 @@ public enum Backtrace {
         func makeTrace(_ signal: CInt) {
             let state = backtrace_create_state(CommandLine.arguments[0], 1, nil, nil)
             if let traceFilePtr = Backtrace.traceFilePtr {
-                backtrace_print(state, 5, &traceFilePtr) // Try skipping 0 frames and see what we're ignoring.
+                backtrace_print(state, 5, &traceFilePtr.pointee) // Try skipping 0 frames and see what we're ignoring.
             } else {
                 fatalError("❌ Never got file.")
             }
