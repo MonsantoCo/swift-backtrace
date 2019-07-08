@@ -34,18 +34,18 @@ internal func _stdlib_demangleName(_ mangledName: String) -> String {
     }
 }
 
-private func addr2lineInvocations(from swiftBacktrace: String) -> [String] {
-    let pattern = #######"(.*)\((.*)\)\s\[(.*)\]"#######
-    let regex = try! NSRegularExpression(pattern: pattern, options: [])
-    
-    return regex.matches(in: swiftBacktrace, options: [], range: NSRange(location: 0, length: swiftBacktrace.count)).map { line in
-        let captureGroup: (Int) -> String = { captureGroup in
-            swiftBacktrace[Range(line.range(at: captureGroup))!]
-        }
-        
-        return "addr2line -e \(captureGroup(1)) \(captureGroup(2)) -f \(captureGroup(3))"
-    }
-}
+//private func addr2lineInvocations(from swiftBacktrace: String) -> [String] {
+//    let pattern = #######"(.*)\((.*)\)\s\[(.*)\]"#######
+//    let regex = try! NSRegularExpression(pattern: pattern, options: [])
+//
+//    return regex.matches(in: swiftBacktrace, options: [], range: NSRange(location: 0, length: swiftBacktrace.count)).map { line in
+//        let captureGroup: (Int) -> String = { captureGroup in
+//            swiftBacktrace[Range(line.range(at: captureGroup))!]
+//        }
+//
+//        return "addr2line -e \(captureGroup(1)) \(captureGroup(2)) -f \(captureGroup(3))"
+//    }
+//}
 
 #if os(Linux)
 import Glibc // Guarantees <execinfo.h> has a callable implementation for backtrace_print
@@ -62,12 +62,12 @@ public enum Backtrace {
             
             let traceFile = home.appendingPathComponent("stack.trace", isDirectory: false)
             
-//            if !FileManager.default.fileExists(atPath: traceFile.path) {
-//                let createdTraceFile = FileManager.default.createFile(atPath: traceFile.path, contents: nil)
-//                print(createdTraceFile ? "✅ File for stacktrace created." : "❌ Failed to create file for stacktrace.")
-//            } else {
-//                print("✅ File for stacktrace already exists. It will be overwritten.")
-//            }
+            if !FileManager.default.fileExists(atPath: traceFile.path) {
+                let createdTraceFile = FileManager.default.createFile(atPath: traceFile.path, contents: nil)
+                print(createdTraceFile ? "✅ File for stacktrace created." : "❌ Failed to create file for stacktrace.")
+            } else {
+                print("✅ File for stacktrace already exists. It will be overwritten.")
+            }
             
             Backtrace.traceFilePtr = fopen(traceFile.path, "w")
             guard let traceFileHandle = try? FileHandle(forUpdating: traceFile) else { fatalError("❌ Failed to get a handle for printing the trace.") }
@@ -79,15 +79,18 @@ public enum Backtrace {
         func makeTrace(_ signal: CInt) {
             let state = backtrace_create_state(CommandLine.arguments[0], 1, nil, nil)
             
-            if let traceFilePtr = Backtrace.traceFilePtr {
-                backtrace_print(state, 5, traceFilePtr)
-                backtrace_print(state, 5, stderr)
-                let dataFromOurFile = Backtrace.traceFileHandle!.readDataToEndOfFile()
-                print("We got this much data: \(dataFromOurFile.count)")
-                print(String(data: dataFromOurFile, encoding: .utf8).flatMap {$0} ?? "❌")
-            } else {
-                fatalError("❌ Never got file.")
-            }
+            guard let traceFilePtr = Backtrace.traceFilePtr else { fatalError("❌ No destination file for the trace.") }
+            
+            backtrace_print(state, 5, traceFilePtr)
+
+            let stackTraceData = Backtrace.traceFileHandle!.readDataToEndOfFile()
+            guard let stackTrace = String(data: stackTraceData, encoding: .utf8) else { "❌ Failed to decode the trace." }
+            
+            let demangledTrace: [String] = stackTrace.split(separator: " ").map { _stdlib_demangleName(String($0)) }
+            demangledTrace.forEach { FileHandle.standardError.write($0) }
+        }
+            
+
 //            let trace: String = addr2lineInvocations(from: "FIXME").map {
 //                let process = Process()
 //                process.launchPath = "/bin/bash"
@@ -107,7 +110,7 @@ public enum Backtrace {
 //            } else {
 //                print("❌ Cannot write mangled symbols to the tracefile. Was data nil?\(trace.data(using: .utf8) == nil), Was the handle nil? \(Backtrace.traceFilePtr == nil)")
 //            }
-        }
+//        }
 
         setupHandler(signal: SIGSEGV, handler: makeTrace)
         setupHandler(signal: SIGILL, handler: makeTrace)
@@ -141,12 +144,12 @@ extension String {
     }
 }
 
-//extension FileHandle : TextOutputStream {IMPLEMENT ME IF THE LOGS ARE EMPTY, maybe just fatal error if it cant decode utf8 since it will be silent otherwise
-//    public func write(_ string: String) {
-//        guard let data = string.data(using: .utf8) else { return }
-//        self.write(data)
-//    }
-//}
+extension FileHandle : TextOutputStream {
+    public func write(_ string: String) {
+        guard let data = string.data(using: .utf8) else { return }
+        self.write(data)
+    }
+}
 
 // EXENAME(SIGNEDSTACKPOINTER) [MODULENAMES]
 // -> PPPname1ZZarg1999T
