@@ -68,7 +68,7 @@ public enum Backtrace {
             
             guard let traceFilePtr = Backtrace.traceFilePtr else { fatalError("❌ No destination file for the trace.") }
             
-            backtrace_print(state, 5, traceFilePtr)
+            backtrace_print(state, 0, traceFilePtr)
 
             let stackTraceData = Backtrace.traceFileHandle!.readDataToEndOfFile()
             guard let stackTrace = String(data: stackTraceData, encoding: .utf8) else { fatalError("❌ Failed to decode the trace.") }
