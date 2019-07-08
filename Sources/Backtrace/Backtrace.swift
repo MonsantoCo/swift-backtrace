@@ -62,12 +62,12 @@ public enum Backtrace {
             
             let traceFile = home.appendingPathComponent("stack.trace", isDirectory: false)
             
-            if !FileManager.default.fileExists(atPath: traceFile.path) {
-                let createdTraceFile = FileManager.default.createFile(atPath: traceFile.path, contents: nil)
-                print(createdTraceFile ? "✅ File for stacktrace created." : "❌ Failed to create file for stacktrace.")
-            } else {
-                print("✅ File for stacktrace already exists. It will be overwritten.")
-            }
+//            if !FileManager.default.fileExists(atPath: traceFile.path) {
+//                let createdTraceFile = FileManager.default.createFile(atPath: traceFile.path, contents: nil)
+//                print(createdTraceFile ? "✅ File for stacktrace created." : "❌ Failed to create file for stacktrace.")
+//            } else {
+//                print("✅ File for stacktrace already exists. It will be overwritten.")
+//            }
             
             Backtrace.traceFilePtr = fopen(traceFile.path, "w")
             guard let traceFileHandle = try? FileHandle(forUpdating: traceFile) else { fatalError("❌ Failed to get a handle for printing the trace.") }
@@ -80,7 +80,6 @@ public enum Backtrace {
             let state = backtrace_create_state(CommandLine.arguments[0], 1, nil, nil)
             
             if let traceFilePtr = Backtrace.traceFilePtr {
-                print("STDERR 📚 returned: \(backtrace_print(state, 5, stderr))")
                 print("TRACER 📚 returned: \(backtrace_print(state, 5, traceFilePtr))")
                 print("STDERR 📚 returned: \(backtrace_print(state, 5, stderr))")
             } else {
