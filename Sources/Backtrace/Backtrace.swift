@@ -81,7 +81,7 @@ public enum Backtrace {
             
             if let traceFilePtr = Backtrace.traceFilePtr {
                 print("STDERR 📚 returned: \(backtrace_print(state, 5, stderr))")
-                print("TRACER 📚 returned: \(backtrace_print(state, 5, traceFilePtr.pointee))")
+                print("TRACER 📚 returned: \(backtrace_print(state, 5, traceFilePtr))")
                 print("STDERR 📚 returned: \(backtrace_print(state, 5, stderr))")
             } else {
                 fatalError("❌ Never got file.")
