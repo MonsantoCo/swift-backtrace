@@ -79,8 +79,11 @@ public enum Backtrace {
         
         func makeTrace(_ signal: CInt) {
             let state = backtrace_create_state(CommandLine.arguments[0], 1, nil, nil)
-            
-            backtrace_print(state, 5, &Backtrace.traceFilePtr!) // Try skipping 0 frames and see what we're ignoring.
+            if let traceFilePtr = Backtrace.traceFilePtr {
+                backtrace_print(state, 5, &traceFilePtr) // Try skipping 0 frames and see what we're ignoring.
+            } else {
+                fatalError("❌ Never got file.")
+            }
             
 //            let trace: String = addr2lineInvocations(from: "FIXME").map {
 //                let process = Process()
