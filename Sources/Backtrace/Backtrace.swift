@@ -86,6 +86,8 @@ public enum Backtrace {
             let stackTraceData = Backtrace.traceFileHandle!.readDataToEndOfFile()
             guard let stackTrace = String(data: stackTraceData, encoding: .utf8) else { fatalError("❌ Failed to decode the trace.") }
             
+            print("🎉\(stackTrace)🎉")
+            
             let demangledTrace: [String] = stackTrace.split(separator: " ").map { _stdlib_demangleName(String($0)) }
             demangledTrace.forEach { FileHandle.standardError.write($0) }
         }
