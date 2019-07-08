@@ -47,9 +47,9 @@ private func addr2lineInvocations(from swiftBacktrace: String) -> [String] {
     }
 }
 
-#if os(Linux)
-import Glibc // Guarantees <execinfo.h> has a callable implementation for backtrace_print
-import CBacktrace
+//#if os(Linux)
+//import Glibc // Guarantees <execinfo.h> has a callable implementation for backtrace_print
+//import CBacktrace
 
 public enum Backtrace {
     private static var traceFilePtr: UnsafeMutablePointer<FILE>? = nil
@@ -80,9 +80,9 @@ public enum Backtrace {
             let state = backtrace_create_state(CommandLine.arguments[0], 1, nil, nil)
             
             if let traceFilePtr = Backtrace.traceFilePtr {
-                print("STDERR 📚 returned: \(backtrace_print(state, 5, &stderr))")
-                print("STDERR 📚 returned: \(backtrace_print(state, 5, &traceFilePtr.pointee))")
-                print("STDERR 📚 returned: \(backtrace_print(state, 5, &stderr))")
+                print("STDERR 📚 returned: \(backtrace_print(state, 5, stderr))")
+                print("TRACER 📚 returned: \(backtrace_print(state, 5, traceFilePtr.pointee))")
+                print("STDERR 📚 returned: \(backtrace_print(state, 5, stderr))")
             } else {
                 fatalError("❌ Never got file.")
             }
@@ -125,12 +125,12 @@ public enum Backtrace {
     }
 }
 
-#else
-public enum Backtrace {
-    public static func install() {
-    }
-}
-#endif
+//#else
+//public enum Backtrace {
+//    public static func install() {
+//    }
+//}
+//#endif
 
 extension String {
     subscript(_ range: CountableRange<Int>) -> String {
