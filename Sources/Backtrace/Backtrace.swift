@@ -47,9 +47,9 @@ private func addr2lineInvocations(from swiftBacktrace: String) -> [String] {
     }
 }
 
-//#if os(Linux)
-//import Glibc // Guarantees <execinfo.h> has a callable implementation for backtrace_print
-//import CBacktrace
+#if os(Linux)
+import Glibc // Guarantees <execinfo.h> has a callable implementation for backtrace_print
+import CBacktrace
 
 public enum Backtrace {
     private static var traceFilePtr: UnsafeMutablePointer<FILE>? = nil
@@ -125,12 +125,12 @@ public enum Backtrace {
     }
 }
 
-//#else
-//public enum Backtrace {
-//    public static func install() {
-//    }
-//}
-//#endif
+#else
+public enum Backtrace {
+    public static func install() {
+    }
+}
+#endif
 
 extension String {
     subscript(_ range: CountableRange<Int>) -> String {
